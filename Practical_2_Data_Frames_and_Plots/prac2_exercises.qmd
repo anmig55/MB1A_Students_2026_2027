@@ -1,0 +1,70 @@
+---
+title: "Practical_2_Data_Frames_and_Plots/prac2_exercises.qmd"
+---
+
+```{r}
+input_vec <- c(5, -10, 4, -3)
+mean(input_vec)
+abs(input_vec)
+round (input_vec)
+```
+
+
+# x <- 1 assigns x with the value of 1
+
+```{r}
+round(3.123, digits = 1)
+```
+
+```{r}
+x <- 1
+y <- 2
+print(x == y)
+```
+
+
+```{r}
+x <- 1
+y <- 2
+print(x = y)
+```
+
+```{r}
+x <- 3
+
+print(x == 2)
+```
+
+```{r}
+x <- 3
+
+print(x == 3)
+```
+
+# set y value of 12 and comparison to y is equal to 7, y is less than 15, y is greater than 20, y is less than or equal to 12
+
+```{r}
+y <- 12
+
+print(y == 7)
+```
+```{r}
+y <- 12
+
+print(y < 15)
+```
+```{r}
+y <- 12
+
+print(y > 20)
+```
+
+```{r}
+y <- 12
+
+print(y <= 12)
+```
+
+
+
+
