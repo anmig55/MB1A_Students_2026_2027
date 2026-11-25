@@ -1,0 +1,219 @@
+---
+title: "visualisation_exercise.qmd"
+---
+
+```{r}
+library(tidyverse)
+library(gt)
+library(janitor)
+library(lubridate)
+```
+
+```{r}
+df <- tibble(
+  x = c(1, 2, 1, 3),
+  y = c(3, 4, 1, 6)
+)
+gt(df)
+```
+
+# clean_names() renames the columns = converts column names into a consistent format by replacing spaces and punctuation with underscores and converting everything to lower case
+
+# One of the columns contains date information which needs to be reformatted - we do this using the mutate() function and the as_date() function. 
+# The as_date() function converts values containing date information into R’s date format
+# can create an extra column in a data frame using function mutate()
+
+
+# to add a new column named x_plus_y with the value of x plus the value of y, using mutate():
+```{r}
+df <- df |>
+  mutate(x_plus_y = x + y)
+
+gt(df)
+```
+
+```{r}
+locations <- read_csv("data/movebank_data.csv") |>
+  clean_names() |>
+  mutate(date = as_date(timestamp))
+```
+
+# Looking at the data frame and check that the data looks as expected:
+
+```{r}
+gt(head(locations))
+```
+
+# Identifying the columns containing the latitude and longitude data, using a unique identifier for each animal in the column (individual_local_identifier)
+
+```{r}
+loc_selected <- locations |> select(
+  date,
+  individual_local_identifier,
+  location_long, location_lat
+)
+
+gt(head(loc_selected))
+```
+
+# Grouping the data by date and individual_local_identifier (can group by multiple factors by adding additional arguments to the group_by() function)
+
+```{r}
+loc_grouped <- loc_selected |>
+  group_by(date, individual_local_identifier)
+```
+
+# Using the summarise function, calculate the median latitude and median longitude for each individual on each date. Add the argument na.rm = TRUE to allow NA values to be ignored:
+
+```{r}
+loc_sum <- loc_grouped |>
+  summarise(
+    Longitude = median(location_long, na.rm = TRUE),
+    Latitude = median(location_lat, na.rm = TRUE)
+  )
+
+gt(head(loc_sum))
+```
+
+# plot the scatter plots using ggplot() and geom_point() with longitude on the x axis and latitude on the y axis
+# add map to the plot using annotation_borders() and coord_quickmap()
+
+
+# the scatter plot
+```{r}
+ggplot(
+  loc_sum,
+  aes(
+    x = Longitude,
+    y = Latitude,
+  )
+) +
+  geom_point()
+```
+
+# with annotation borders
+```{r}
+ggplot(
+  loc_sum,
+  aes(
+    x = Longitude,
+    y = Latitude,
+  )
+) +
+  geom_point() +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap()
+```
+
+# with axis limits
+```{r}
+min_lat <- loc_sum |>
+  pull(Latitude) |>
+  min()
+
+max_lat <- loc_sum |>
+  pull(Latitude) |>
+  max()
+
+min_lon <- loc_sum |>
+  pull(Longitude) |>
+  min()
+
+max_lon <- loc_sum |>
+  pull(Longitude) |>
+  max()
+
+
+ggplot(
+  loc_sum,
+  aes(
+    x = Longitude,
+    y = Latitude,
+  )
+) +
+  geom_point() +
+  annotation_borders(
+    linewidth = 0.2
+  ) +
+  coord_quickmap(
+    # as my data has a narrow y range I have used 0.2 instead of 2
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 0.2, max_lat + 0.2)
+  )
+```
+
+# with colour added
+```{r}
+ggplot(
+  loc_sum,
+  aes(
+    x = Longitude,
+    y = Latitude,
+    color = individual_local_identifier
+  )
+) +
+  geom_point() +
+  annotation_borders(
+    linewidth = 0.2
+  ) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 0.2, max_lat + 0.2)
+  )
+```
+
+# with title and axis labels
+```{r}
+ggplot(
+  loc_sum,
+  aes(
+    x = Longitude,
+    y = Latitude,
+    color = individual_local_identifier
+  )
+) +
+  geom_point() +
+  annotation_borders(
+    linewidth = 0.2
+  ) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 0.2, max_lat + 0.2)
+  ) +
+  ggtitle("Locations of individual Phoca vitulina") +
+  xlab("Longitude (°)") +
+  ylab("Latitude (°)") +
+  theme_minimal()
+```
+
+# different appearance for visualistion of data
+```{r}
+ggplot(
+  loc_sum,
+  aes(
+    x = Longitude,
+    y = Latitude,
+    color = individual_local_identifier
+  )
+) +
+  geom_point() +
+  annotation_borders(
+    linewidth = 0.2
+  ) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 0.2, max_lat + 0.2)
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  ggtitle("Locations of individual Phoca vitulina") +
+  xlab("Longitude (°)") +
+  ylab("Latitude (°)") +
+  theme_minimal()
+```
+
+
+
+
+
+
+
