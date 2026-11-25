@@ -199,14 +199,14 @@ gt(lat_df)
 ```{r}
 bird_migration_summary <- bird_migration_grouped |>
   summarise(
-    Median_Lat_Stopover = median(Stopover_Latitude, na.rm = TRUE),
-    Median_Long_Stopover = median(Stopover_Longitude, na.rm = TRUE), 
-    Median_Lat_Iberian = median(Iberian_Laritude, na.rm = TRUE),
-    Median_Long_Iberian = median(Iberian_Longitude, na.rm = TRUE),
-    Median_Lat_Westmost = median(Westmost_Latitude, na.rm = TRUE),
-    Median_Long_Westmost = median(Westmost_Longtitude, na.rm = TRUE),
-    Median_Lat_Winter = median(Winter_Latitude, na.rm = TRUE),
-    Median_Long_Winter = median(Winter_Longitude, na.rm = TRUE)
+    Stopover_Latitude = median(Stopover_Latitude, na.rm = TRUE),
+    Stopover_Longitude = median(Stopover_Longitude, na.rm = TRUE), 
+    Iberian_Latitude = median(Iberian_Laritude, na.rm = TRUE),
+    Iberian_Longitude = median(Iberian_Longitude, na.rm = TRUE),
+    Westmost_Latitude = median(Westmost_Latitude, na.rm = TRUE),
+    Westmost_Longitude = median(Westmost_Longtitude, na.rm = TRUE),
+    Winter_Latitude = median(Winter_Latitude, na.rm = TRUE),
+    Winter_Longitude = median(Winter_Longitude, na.rm = TRUE)
   )
 
 gt(bird_migration_summary)
@@ -284,7 +284,7 @@ gt(combined_bird_data)
 ```{r}
 combined_bird_piv <- combined_bird_data |>
   pivot_longer(
-    cols = starts_with(c("Median_Long_", "Median_Lat_")),
+    cols = ends_with(c("Longitude", "Latitude")),
     names_sep = "_",
     names_to = c("Location_Type", ".value")
   )
@@ -328,6 +328,250 @@ write_csv(spring_data, "output/birds_spring.csv")
 write_csv(autumn_data, "output/birds_autumn.csv")
 ```
 
+```{r}
+gt(spring_data)
+```
+
+```{r}
+ggplot(spring_data)
+```
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude)
+)
+```
+
+```{r}
+my_data_frame <- tibble(
+  fruit = c("apple", "pear", "banana"),
+  length = c(22, 30, 55),
+  weight = c(150, 165, 170)
+)
+
+gt(my_data_frame)
+```
+
+#To plot this data as a scatter plot, with length on the x axis and weight on the y axis
+
+```{r}
+ggplot(my_data_frame, aes(x = length, y = weight)) +
+  geom_point()
+```
+
+```{r}
+ggplot(spring_data, aes(x = Longitude, y = Latitude)) +
+  geom_point()
+```
+
+# function annotation_borders() = add geographical country borders to a scatter plot representing a map
+# function coord_quickmap() = keeps shape of the plot consistent so the map isn’t skewed
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude)
+) +
+  geom_point() +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap()
+```
+
+# to find min and max longitude and latitude us min(), max(). pull() pulls a single column from the data frame
+
+#finding min longtitude below, and the rest...:
+
+```{r}
+min_lon <- spring_data |>
+  pull(Longitude) |>
+  min()
+
+print(min_lon)
+```
+
+```{r}
+max_lon <- spring_data |>
+  pull(Longitude) |>
+  max()
+
+print(max_lon)
+```
+
+
+```{r}
+min_lat <- spring_data |>
+  pull(Latitude) |>
+  min()
+
+print(min_lat)
+```
+
+```{r}
+max_lat <- spring_data |>
+  pull(Latitude) |>
+  max()
+
+print(max_lat)
+```
+
+
+
+# important as allows to then figure out what to set axis limits to, so can zoom in on graph to only contain the parts where the points actually are present
+
+# set x axis limits with coord_quickmap() function:
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude)
+) +
+  geom_point() +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(xlim = c(min_lon - 2, max_lon + 2))
+```
+
+# same but now for y axis and x axis
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude)
+) +
+  geom_point() +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(
+    ylim = c(min_lat - 2, max_lat + 2), xlim = c(min_lon -2, max_lon + 2)
+    )
+```
+
+# to increase the size of the points themselves increase geom_point(size=bigger number)
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude)
+) +
+  geom_point(size=3) +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 2, max_lat + 2)
+  )
+```
+
+# aes() function controls how variables in the data are mapped to visual properties of the plot. Previously mapped Longitude to the x-axis and Latitude to the y-axis but can also map variables to colour, shape and many other visual properties
+
+```{r}
+gt(spring_data)
+```
+
+# set colour by the site column (colour = site) with aes() function
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude, color = Site)
+) +
+  geom_point(size=3) +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 2, max_lat + 2)
+  )
+```
+
+# including (shape = Location_Type) within aes() function so shape set by location type
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude, color = Site, shape = Location_Type)
+) +
+  geom_point(size=3) +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 2, max_lat + 2)
+  )
+```
+
+# 1- use ggtitle() to give graph a title, 2- use xlab() and ylab() to give the axis labels
+
+# theme_minimal() can be used to apply the ggplot minimal theme to the plots, this changes the default plot appearance (is a personal preference to apply a theme)
+
+
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude, color = Site, shape = Location_Type)
+) +
+  geom_point(size  = 3) +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 2, max_lat + 2)
+  ) +
+  ggtitle("Pied Flycatcher Spring Migration Routes") +
+  xlab("Longitude (°)") +
+  ylab("Latitude (°)") +
+  theme_minimal()
+```
+
+# can add paths to connect points of migration locations by using geom_path() function, grouping the points by breeding site, and by adding the argument aes(group = Site)
+
+```{r}
+ggplot(
+  spring_data,
+  aes(x = Longitude, y = Latitude, color = Site, shape = Location_Type)
+) +
+  geom_point(size = 3) +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 2, max_lat + 2)
+  ) +
+  geom_path(aes(group = Site)) +
+  ggtitle("Pied Flycatcher Spring Migration Routes") +
+  xlab("Longitude (°)") +
+  ylab("Latitude (°)") +
+  theme_minimal()
+```
+
+```{r}
+min_lon <- autumn_data |>
+  pull(Longitude) |>
+  min()
+
+max_lon <- autumn_data |>
+  pull(Longitude) |>
+  max()
+
+min_lat <- autumn_data |>
+  pull(Latitude) |>
+  min()
+
+max_lat <- autumn_data |>
+  pull(Latitude) |>
+  max()
+
+ggplot(
+  autumn_data,
+  aes(x = Longitude, y = Latitude, color = Site, shape = Location_Type)
+) +
+  geom_point(size = 3) +
+  annotation_borders(linewidth = 0.2) +
+  coord_quickmap(
+    xlim = c(min_lon - 2, max_lon + 2),
+    ylim = c(min_lat - 2, max_lat + 2)
+  ) +
+  geom_path(aes(group = Site)) +
+  ggtitle("Pied Flycatcher Autumn Migration Routes") +
+  xlab("Longitude (°)") +
+  ylab("Latitude (°)") +
+  theme_minimal()
+```
 
 
 
